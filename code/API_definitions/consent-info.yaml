@@ -72,27 +72,27 @@ tags:
   - name: Verify Status
     description: Create a request to verify the status of Consent or other Legal Basis
 paths:
-  /verify:
+  /get-status:
     post:
-      summary: Create a request to verify the status of Consent or other Legal Basis
+      summary: Get the processing status for some scopes and Purpose
       description: |
-        Create a request to verify the Consent or other Legal Basis of a specific User to the API Consumer for the requested scope(s) and Purpose. The API Consumer is identified by the `client_id` parameter deduced from the access token.
-      operationId: verifyConsentStatus
+        Get the processing status of a specific User for the requested scope(s) and Purpose. The API Consumer is identified by the `client_id` parameter deduced from the access token.
+      operationId: getProcessingStatus
       security:
         - openId:
-            - consent-info:verify
+            - consent-info:get-status
       tags:
-        - Verify Status
+        - Get Processing Status
       parameters:
         - $ref: '#/components/parameters/x-correlator'
       requestBody:
         required: true
         description:
-          Status verification request
+          Status request
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/VerifyStatusRequestBody"
+              $ref: "#/components/schemas/GetStatusRequestBody"
             examples:
               ONE_SCOPE_ONE_API:
                 summary: One scope
@@ -247,7 +247,7 @@ paths:
         "401":
           $ref: "#/components/responses/Generic401"
         "403":
-          $ref: "#/components/responses/verifyConsentStatus403"
+          $ref: "#/components/responses/getConsentStatus403"
         "404":
           $ref: "#/components/responses/Generic404"
         "422":
@@ -274,7 +274,7 @@ components:
       description: A public identifier addressing a telephone subscription. In mobile networks it corresponds to the MSISDN (Mobile Station International Subscriber Directory Number). In order to be globally unique it has to be formatted in international format, according to E.164 standard, prefixed with '+'.
       pattern: '^\+[1-9][0-9]{4,14}$'
       example: "+123456789"
-    VerifyStatusRequestBody:
+    GetStatusRequestBody:
       type: object
       description: |
         The request body for the status verification request. It contains the requested scope(s), the Purpose for which the API Consumer intends to process the User's Personal Data, a flag indicating whether the API Consumer requests a Consent capture URL and optionally the phone number of the User. The phone number is required when the API is invoked using a two-legged access token, but MUST NOT be provided when a three-legged access token is used, as the subject will be uniquely identified from the access token.
@@ -441,7 +441,7 @@ components:
                 status: 401
                 code: UNAUTHENTICATED
                 message: Request not authenticated due to missing, invalid, or expired credentials.
-    verifyConsentStatus403:
+    getConsentStatus403:
       description: Forbidden
       headers:
         x-correlator:
