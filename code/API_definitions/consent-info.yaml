@@ -5,7 +5,7 @@ info:
 
     The Consent Info API allows an API Consumer to verify the Consent status of a particular User for that API Consumer (identified by `client_id` from the access token) concerning requested scope(s) and a specific Purpose. It helps determine if Consent is legally required for these parameters. If Consent is necessary but not yet granted, or if it has expired, the API can provide a URL pointing to the API Provider's Consent capture channel. This enables the API Consumer to direct the User to grant or renew Consent in a secure and trusted environment.
 
-    While verifying User Consent is a primary use case, this API allows to check the validity of *any* Legal Basis (e.g., `dpv:Consent`, `dpv:LegitimateInterest`, `dpv:Contract`, etc) that authorizes data processing for a given Purpose.
+    While verifying User Consent is a primary use case, this API allows to check the validity of *any* Legal Basis agreed upon at API consumer onboardiing-time that authorizes data processing for a given scope and Purpose.
 
     # Introduction
 
@@ -149,7 +149,6 @@ paths:
                       - scopes:
                           - "number-verification:verify"
                         purpose: "dpv:FraudPreventionAndDetection"
-                        legalBasis: "dpv:LegitimateInterest"
                         statusValidForProcessing: true
                 CONSENT_REQUIRED:
                   summary: Consent is required
@@ -160,7 +159,6 @@ paths:
                       - scopes:
                           - "location-verification:verify"
                         purpose: "dpv:FraudPreventionAndDetection"
-                        legalBasis: "dpv:Consent"
                         statusValidForProcessing: false
                         statusReason: REQUESTED
                 CONSENT_REQUIRED_CAPTURE_URL:
@@ -172,7 +170,6 @@ paths:
                       - scopes:
                           - "location-verification:verify"
                         purpose: "dpv:FraudPreventionAndDetection"
-                        legalBasis: "dpv:Consent"
                         statusValidForProcessing: false
                         statusReason: EXPIRED
                         expirationDate: '2023-07-03T14:27:08.312+02:00'
@@ -186,7 +183,6 @@ paths:
                       - scopes:
                           - "location-verification:verify"
                         purpose: "dpv:FraudPreventionAndDetection"
-                        legalBasis: "dpv:Consent"
                         statusValidForProcessing: false
                         statusReason: REVOKED
                 LEGITIMATE_INTEREST_OPT_OUT:
@@ -198,7 +194,6 @@ paths:
                       - scopes:
                           - "number-verification:verify"
                         purpose: "dpv:FraudPreventionAndDetection"
-                        legalBasis: "dpv:LegitimateInterest"
                         statusValidForProcessing: false
                         statusReason: REVOKED
                 MULTIPLE_SCOPES_ONE_API:
@@ -214,7 +209,6 @@ paths:
                           - "quality-on-demand:sessions:delete"
                           - "quality-on-demand:sessions:retrieve-by-device"
                         purpose: "dpv:RequestedServiceProvision"
-                        legalBasis: "dpv:Contract"
                         statusValidForProcessing: true
                 MULTIPLE_SCOPES_MULTIPLE_APIS:
                   summary: Multiple scopes for multiple APIs
@@ -225,13 +219,11 @@ paths:
                       - scopes:
                           - "location-verification:verify"
                         purpose: "dpv:FraudPreventionAndDetection"
-                        legalBasis: "dpv:Consent"
                         statusValidForProcessing: false
                         statusReason: PENDING
                       - scopes:
                           - "device-roaming-status:read"
                         purpose: "dpv:FraudPreventionAndDetection"
-                        legalBasis: "dpv:Consent"
                         statusValidForProcessing: false
                         statusReason: PENDING
                     captureUrl: 'https://example.org/consent-capture-url'
@@ -244,12 +236,10 @@ paths:
                       - scopes:
                           - "sim-swap:check"
                         purpose: "dpv:FraudPreventionAndDetection"
-                        legalBasis: "dpv:LegitimateInterest"
                         statusValidForProcessing: true
                       - scopes:
                           - "sim-swap:retrieve-date"
                         purpose: "dpv:FraudPreventionAndDetection"
-                        legalBasis: "dpv:LegitimateInterest"
                         statusValidForProcessing: false
                         statusReason: REVOKED
         "400":
@@ -331,7 +321,7 @@ components:
           type: string
           format: url
           description: |
-            URL where the User can provide the necessary Consent. This field is only present if requested by the API Consumer and if `statusInfo[*].legalBasis` is `dpv:Consent`, `statusInfo[*].statusValidForProcessing` is `false`, and `statusInfo[*].statusReason` is `PENDING`, `REQUESTED` or `EXPIRED`.
+            URL where the User can provide the necessary Consent. This field is only present if requested by the API Consumer.
           example: 'https://example.org/consent-capture-url'
     statusInfo:
       type: array
@@ -346,30 +336,18 @@ components:
       required:
         - scopes
         - purpose
-        - legalBasis
         - statusValidForProcessing
       properties:
         scopes:
           $ref: "#/components/schemas/Scopes"
         purpose:
           $ref: "#/components/schemas/Purpose"
-        legalBasis:
-          type: string
-          description: |
-              The applicable Legal Basis for the requested scope(s) and Purpose. It uses terms from the W3C [Data Privacy Vocabulary](https://w3c.github.io/dpv/2.1/) (DPV).
-          enum:
-            - dpv:Consent
-            - dpv:LegitimateInterest
-            - dpv:Contract
-            - dpv:LegalObligation
-            - dpv:PublicInterest
-            - dpv:VitalInterest
         statusValidForProcessing:
           type: boolean
           description: |
-              Boolean flag that shows whether the specified Legal Basis is currently valid for processing data related to the indicated scope(s) and Purpose.
-              * `true` - The specified `legalBasis` is currently valid and permits the requested data processing. For example, necessary user Consent has been obtained; a legitimate interests assessment resulted in a positive outcome, with no overriding objections; or the processing is deemed necessary under an existing contract.
-              * `false` - The specified `legalBasis` is not valid for processing the requested scope(s) and Purpose. The reason for this is indicated in the `statusReason` field. This may be because the User has not yet provided Consent, has opted out of processing based on legitimate interest or because the Legal Basis is no longer applicable for other reasons.
+              Boolean flag that shows whether the specified `scope` and `Purpose` currently permit processing data.
+              * `true` - The specified `scope` and `Purpose` permit the requested data processing. For example, necessary user Consent has been obtained; a legitimate interests assessment resulted in a positive outcome, with no overriding objections; or the processing is deemed necessary under an existing contract.
+              * `false` - The specified `scope` and `Purpose` do not permit processing. The reason for this is indicated in the `statusReason` field. This may be because the User has not yet provided Consent, has opted out of processing based on legitimate interest.
         statusReason:
           type: string
           enum:
@@ -378,22 +356,22 @@ components:
             - REVOKED
             - EXPIRED
           description: |
-              This field must be present if `statusValidForProcessing` is `false`. It indicates the reason why the specified `legalBasis` is not valid for processing the requested scope(s) and Purpose. It provides API consumers with additional context on the current state of the Legal Basis, helping them to understand its applicability and the next steps they may need to take.
-              It is particularly useful for determining whether the API Consumer should prompt the User to take action, such as providing Consent or renewing an existing Consent.
+              This field must be present if `statusValidForProcessing` is `false`. It indicates the reason why processing is for the specified `scope` and `purpose` is invalid.
+              `statusReason`is useful for determining whether the API Consumer should prompt the user to take action, such as providing Consent or renewing an existing Consent.
               Possible values are:
               - `PENDING`: The specified `legalBasis` is not yet established or fully validated for the requested data processing.
                            For example, the user has not yet provided Consent under `dpv:Consent` Legal Basis.
-              - `REQUESTED`: Where applicable, the specified `legalBasis` has been requested but not yet granted or confirmed.
+              - `REQUESTED`: Where applicable, the permission for processing for the specified scope and Purpose has been requested but not yet granted or confirmed.
                            This is common for `dpv:Consent`, where the API Consumer has initiated a request for Consent capture, but the User has not yet completed the process. For example, this occurs when a notice prompting the User to Provide consent has been displayed, but they have not yet made a decision.
-              - `REVOKED`: Where applicable (primarily for `dpv:Consent` and `dpv:LegitimateInterest`), the user has actively withdrawn their permission, or the previously valid `legalBasis` is no longer considered so due to user action.
+              - `REVOKED`: The user has actively withdrawn their permission.
                            This includes revocation of Consent or a successful objection (opt-out) to processing based on legitimate interest.
-              - `EXPIRED`: Where applicable, the validity of the `legalBasis` for data processing has ceased due to the passage of time or a pre-defined condition.
+              - `EXPIRED`: Where applicable, the validity for data processing has ceased due to the passage of time or a pre-defined condition.
                            This is common for time-limited Consents or could apply to other Legal Basis if their applicability was time-bound.
         expirationDate:
           type: string
           format: date-time
           description: |
-             The date and time at which the validity of this `legalBasis` is set to expire or has expired.
+             The date and time at which the validity for processing is set to expire or has expired.
              It applies mainly to time-limited Legal Basis, such as `dpv:Consent`, or others where a specific duration of validity is defined. This field is only applicable if `statusValidForProcessing` is `true` (indicating a future expiration) or if `statusValidForProcessing` is `false` and `statusReason` is `EXPIRED` (indicating the past expiration date). It must follow [RFC 3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) and must have time zone. Recommended format is yyyy-MM-dd'T'HH:mm:ss.SSSZ (i.e. which allows 2023-07-03T14:27:08.312+02:00 or 2023-07-03T12:27:08.312Z).
           example: '2023-07-03T14:27:08.312+02:00'
     ErrorInfo:
@@ -577,3 +555,4 @@ components:
     openId:
       type: openIdConnect
       openIdConnectUrl: https://example.org/.well-known/openid-configuration
+
