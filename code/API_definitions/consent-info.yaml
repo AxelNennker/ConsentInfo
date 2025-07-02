@@ -26,7 +26,7 @@ info:
     Specifically, the API:
 
     * Provides the data processing validity status and reason: The API returns `statusValidForProcessing`, a boolean flag that is `true` if processing is permitted. If the flag is `false`, a `statusReason` field is also returned to explain why.
-    * Offers an URL where the User can provide the necessary Consent. This field is only present if requested by the API Consumer and if the legal basis for these Purpose and Scope is `dpv:Consent`, `statusInfo[*].statusValidForProcessing` is `false`, and `statusInfo[*].statusReason` is `PENDING`, `REQUESTED`, `REVOKED` or `EXPIRED`.
+    * Offers an URL where the User can provide the necessary Consent. This field is only present if requested by the API Consumer and if the legal basis for these Purpose and Scope is `dpv:Consent`, `statusInfo[*].statusValidForProcessing` is `false`, and `statusInfo[*].statusReason` is `PENDING`, `REQUESTED` or `EXPIRED`.
 
     Importantly, this API does NOT delegate Consent capture to the API Consumer but rather empowers the API Consumer to present the API Provider's Consent capture URL at the most opportune time and place. The actual Consent capture occurs within the API Provider's secure environment, ensuring the User's authentication with the API Provider.
 
@@ -319,7 +319,7 @@ components:
           type: string
           format: url
           description: |
-            URL where the User can provide the necessary Consent. This field is only present if requested by the API Consumer.
+            URL where the User can provide the necessary Consent. This field is only present if requested by the API Consumer and if the legal basis for these Purpose and Scope is `dpv:Consent`, `statusInfo[*].statusValidForProcessing` is `false`, and `statusInfo[*].statusReason` is `PENDING`, `REQUESTED` or `EXPIRED`.
           example: 'https://example.org/consent-capture-url'
     statusInfo:
       type: array
