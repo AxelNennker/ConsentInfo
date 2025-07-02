@@ -193,7 +193,7 @@ paths:
                           - "number-verification:verify"
                         purpose: "dpv:FraudPreventionAndDetection"
                         statusValidForProcessing: false
-                        statusReason: REVOKED
+                        statusReason: OBJECTED
                 MULTIPLE_SCOPES_ONE_API:
                   summary: Multiple scopes for one API
                   description: |
@@ -239,7 +239,7 @@ paths:
                           - "sim-swap:retrieve-date"
                         purpose: "dpv:FraudPreventionAndDetection"
                         statusValidForProcessing: false
-                        statusReason: REVOKED
+                        statusReason: OBJECTED
         "400":
           $ref: "#/components/responses/Generic400"
         "401":
